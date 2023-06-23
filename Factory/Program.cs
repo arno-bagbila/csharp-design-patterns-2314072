@@ -6,7 +6,9 @@ namespace Factory
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("Hello World!");
+            var notificationServiceProvider = new NotificationServiceProvider();
+            var shippingService = new ShippingService(notificationServiceProvider);
+            shippingService.ShipItem();
         }
     }
 }

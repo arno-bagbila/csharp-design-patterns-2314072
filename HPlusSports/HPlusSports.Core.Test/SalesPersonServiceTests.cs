@@ -6,22 +6,37 @@ using HPlusSports.Models;
 using System.Threading.Tasks;
 using Moq;
 using HPlusSports.Core.Test.Mocks;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace HPlusSports.Core.Test
 {
     [TestClass]
     public class SalesPersonServiceTests
     {
+        ServiceProvider _serviceProvider;
+
+        public SalesPersonServiceTests() 
+        {
+            var services = new ServiceCollection();
+            services.AddScoped<ISalesPersonRepository, SalesPersonRepositoryMock>();
+            services.AddScoped<ITrackingRepository<SalesGroup>, SalesGroupRepositoryMock>();
+            services.AddTransient<ISalesPersonService, SalesPersonService>();
+            _serviceProvider = services.BuildServiceProvider();
+        }
+
         [TestMethod]
         public async Task MoveSalesPersonWithoutGroupToExistingGroup()
         {
-            var salesRepo = new SalesPersonRepositoryMock();
-            var salesGroupRepo = new SalesGroupRepositoryMock();
+            //var salesRepo = new SalesPersonRepositoryMock();
+            var salesRepo = _serviceProvider.GetService<ISalesPersonRepository>();
+            //var salesGroupRepo = new SalesGroupRepositoryMock();
+            var salesGroupRepo = _serviceProvider.GetService<ITrackingRepository<SalesGroup>>();
 
             salesGroupRepo.Add(new SalesGroup() { State = "TEST", Type = 1, Id = 1 });
             salesRepo.Add(new Salesperson() { Id = 1 });
 
-            var service = new SalesPersonService(salesRepo, salesGroupRepo);
+            //var service = new SalesPersonService(salesRepo, salesGroupRepo);
+            var service = _serviceProvider.GetService<ISalesPersonService>();
 
             await service.MoveSalesPersonToGroup(1, 1);
 
